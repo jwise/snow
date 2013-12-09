@@ -6,8 +6,8 @@ reports.  As it turns out, OpenSnow isn't, and it seems that ski resorts
 don't provide APIs with all the data you might want.  A secondary (primary?)
 goal is to provide an excuse for me to learn BeautifulSoup...
 
-Currently, `snow` supports only Heavenly Ski Resort.  Other resorts may be
-implemented as time -- or pull requests -- permit.
+Currently, `snow` supports only the Vail Resorts in Tahoe.  Other resorts
+may be implemented as time -- or pull requests -- permit.
 
 `snow` resort implementations should try to adhere to a standard-ish API --
 ideally, all modules should provide at least one function, `snow_report()`,

@@ -39,23 +39,22 @@ def snow_report():
     return s
   
   runs = \
-    { run.find_all("td")[1].get_text(): \
-      { "name": run.find_all("td")[1].get_text(), \
-        "difficulty": run.find_all("img")[0]['alt'], \
-        "open": text_to_status(run.find_all("img")[1]['alt']), \
-        "region": r.find_all("h2")[0].get_text().split(" - ")[0] \
-      } \
-      for r in regions \
-      for tab in r.find("tr").find_all("table") \
-      for run in tab.find_all("tr")[1:] \
+    { run.find_all("td")[1].get_text():
+      { "difficulty": run.find_all("img")[0]['alt'],
+        "open": text_to_status(run.find_all("img")[1]['alt']),
+        "region": r.find_all("h2")[0].get_text().split(" - ")[0]
+      }
+      for r in regions
+      for tab in r.find("tr").find_all("table")
+      for run in tab.find_all("tr")[1:]
     }
   
   lifts = \
-    {lift.find_all("td")[0].get_text().strip(): \
-      { "type": lift.find_all("td")[1].get_text().strip(), \
-        "open": text_to_status(lift.find_all("td")[2].find("img")['alt']) \
-      } \
-      for lift in soup.find(id="Lifts").find("table").find_all("tr")[1:] \
+    {lift.find_all("td")[0].get_text().strip():
+      { "type": lift.find_all("td")[1].get_text().strip(),
+        "open": text_to_status(lift.find_all("td")[2].find("img")['alt'])
+      }
+      for lift in soup.find(id="Lifts").find("table").find_all("tr")[1:]
     }
   
   words = soup.find(attrs={"class": "introText"}).get_text()
@@ -67,25 +66,25 @@ def snow_report():
   #   feet.  The snow stake at Dipper Express is our official snow stake
   #   camera and the one we use to record our historical snowfall totals.
   
-  return { \
-    "description": words, \
-    "snow_stakes": { \
-      "dipper_express": { \
-        "elevation": 9800, \
-        "overnight": snow_overnight, \
-        "hours_24": snow_24hr, \
-        "hours_48": snow_48hr, \
-        "days_7": snow_7day, \
-        "conditions": snow_type, \
-        "base": snow_base, \
-        "season_total": snow_season_total \
-      }, \
-    }, \
-    "lifts": lifts, \
-    "runs": runs, \
-    "stats": { \
-      "runs": {"open": runs_open, "total": runs_total}, \
-      "acres": {"open": acres_open, "total": acres_total}, \
-      "percent": percent_open \
-    } \
+  return {
+    "description": words,
+    "snow_stakes": {
+      "dipper_express": {
+        "elevation": 9800,
+        "overnight": snow_overnight,
+        "hours_24": snow_24hr,
+        "hours_48": snow_48hr,
+        "days_7": snow_7day,
+        "conditions": snow_type,
+        "base": snow_base,
+        "season_total": snow_season_total
+      },
+    },
+    "lifts": lifts,
+    "runs": runs,
+    "stats": {
+      "runs": {"open": runs_open, "total": runs_total},
+      "acres": {"open": acres_open, "total": acres_total},
+      "percent": percent_open
+    }
   }

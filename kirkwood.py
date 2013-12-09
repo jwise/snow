@@ -37,10 +37,10 @@ def snow_report():
   road_conditions   = soup.find(id="snowReport").find(text=re.compile("Road Conditions")).next_sibling.get_text()
   
   roads = \
-    { \
-      road.find_all("td")[0].get_text().split(":")[0]:\
-        road.find_all("td")[1].get_text().strip() \
-      for road in soup.find(id="snowReport").find(text=re.compile("Road Conditions")).parent.next_sibling.next_sibling.find_all("tr") \
+    {
+      road.find_all("td")[0].get_text().split(":")[0]:
+        road.find_all("td")[1].get_text().strip() 
+      for road in soup.find(id="snowReport").find(text=re.compile("Road Conditions")).parent.next_sibling.next_sibling.find_all("tr")
     }
   
   def text_to_status(s):
@@ -57,13 +57,13 @@ def snow_report():
     return s['src']
   
   lifts = \
-    { \
-      lift.find_all("td")[0].get_text().strip(): \
-        { "open": text_to_status(lift.find_all("td")[2].get_text().strip()), \
-          "groomed_runs": lift.find_all("td")[3].get_text().strip(), \
-          "terrain": [img_to_terrain(i) for i in lift.find_all("td")[1].find_all("img")] \
-        } \
-      for lift in soup.find(id="snowReport").find(text=re.compile("Lift Operations")).parent.next_sibling.next_sibling.find_all("tr")[1:] \
+    {
+      lift.find_all("td")[0].get_text().strip():
+        { "open": text_to_status(lift.find_all("td")[2].get_text().strip()),
+          "groomed_runs": lift.find_all("td")[3].get_text().strip(),
+          "terrain": [img_to_terrain(i) for i in lift.find_all("td")[1].find_all("img")]
+        }
+      for lift in soup.find(id="snowReport").find(text=re.compile("Lift Operations")).parent.next_sibling.next_sibling.find_all("tr")[1:]
     }
 
   # XXX: parks and pipes
@@ -82,43 +82,45 @@ def snow_report():
   runs_total = int(soup.find("resort", description=re.compile("Kirkwood"))['totalruns'])
   percent_open = int(soup.find("resort", description=re.compile("Kirkwood")).find("terrainopen")['percent'])
   acres_open = int(soup.find("resort", description=re.compile("Kirkwood")).find("terrainopen")['hectares']) * 2.5
+  
+  snow_overnight = int(soup.find("resort", description=re.compile("Kirkwood")).find("sincemtnclosed")['inches'])
 
-  return { \
-    "time": timestamp, \
-    "description": headline, \
-    "weather": { "skies": weather, "temp": tempF, "wind": { "mph": windmph, "direction": winddir }, "forecast": { "today": forecast_today, "short_term": forecast_short_term } }, \
-    "snow_stakes": { \
-      "base": { \
-        "elevation": 7840, \
-        # overnight \
-        "hours_24": snow_base_24hr, \
-        "hours_48": snow_base_48hr, \
-        "storm_total": snow_base_storm, \
-        "days_7": snow_7day, \
-        "conditions": snow_conditions, \
-        "base": snow_base, \
-        "season_total": snow_total, \
-      }, \
-      "summit": { \
-        "elevation": 9800, \
-        # overnight \
-        "hours_24": snow_summit_24hr, \
-        "hours_48": snow_summit_48hr, \
-        "storm_total": snow_base_storm, \
-        "days_7": snow_7day, \
-        "conditions": snow_conditions, \
-        "base": snow_base, \
-        "season_total": snow_total, \
-      }, \
-    }, \
-    "lifts": lifts, \
-    "runs": {}, \
-    "roads": roads, \
-    "stats": { \
-      "road_conditions": road_conditions, \
-      "runs": { "total": runs_total }, \
-      "acres": { "open": acres_open, "total": acres_total }, \
-      "percent": percent_open, \
-      "lifts": { "open": lifts_open, "total": lifts_total }, \
-    }, \
+  return {
+    "time": timestamp,
+    "description": headline,
+    "weather": { "skies": weather, "temp": tempF, "wind": { "mph": windmph, "direction": winddir }, "forecast": { "today": forecast_today, "short_term": forecast_short_term } },
+    "snow_stakes": {
+      "base": {
+        "elevation": 7840,
+        "overnight": snow_overnight,
+        "hours_24": snow_base_24hr,
+        "hours_48": snow_base_48hr,
+        "storm_total": snow_base_storm,
+        "days_7": snow_7day,
+        "conditions": snow_conditions,
+        "base": snow_base,
+        "season_total": snow_total,
+      },
+      "summit": {
+        "elevation": 9800,
+        "overnight": snow_overnight,
+        "hours_24": snow_summit_24hr,
+        "hours_48": snow_summit_48hr,
+        "storm_total": snow_base_storm,
+        "days_7": snow_7day,
+        "conditions": snow_conditions,
+        "base": snow_base,
+        "season_total": snow_total,
+      },
+    },
+    "lifts": lifts,
+    "runs": {},
+    "roads": roads,
+    "stats": {
+      "road_conditions": road_conditions,
+      "runs": { "total": runs_total },
+      "acres": { "open": acres_open, "total": acres_total },
+      "percent": percent_open,
+      "lifts": { "open": lifts_open, "total": lifts_total },
+    },
   }
