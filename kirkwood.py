@@ -60,7 +60,7 @@ def snow_report():
     {
       lift.find_all("td")[0].get_text().strip():
         { "open": text_to_status(lift.find_all("td")[2].get_text().strip()),
-          "groomed_runs": lift.find_all("td")[3].get_text().strip(),
+          "groomed_runs": lift.find_all("td")[3].get_text().strip() if 3 in lift.find_all("td") else "",
           "terrain": [img_to_terrain(i) for i in lift.find_all("td")[1].find_all("img")]
         }
       for lift in soup.find(id="snowReport").find(text=re.compile("Lift Operations")).parent.next_sibling.next_sibling.find_all("tr")[1:]
