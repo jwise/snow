@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+import re
 
 def snow_report():
   r = requests.get("http://www.skiheavenly.com/the-mountain/snow-report/snow-report.aspx")
@@ -15,6 +16,12 @@ def snow_report():
   snow_base         = int(soup.find(attrs={"class": "snowConditions"}).find_all("td")[0].get_text().split(" ")[0])
   snow_season_total = int(soup.find(attrs={"class": "snowConditions"}).find_all("td")[1].get_text().split(" ")[0])
   
+  # Yes, I know that it says "TempCelsius".  Celsius is in the alt text. 
+  # The text itself is Fahrenheit.  Good work.
+  tempF_low      = int(re.match(r"([-\d]+)", soup.find(id="columnCenter_ctl01_spnTodayLowTempCelsius").get_text()).group(0))
+  tempF_high     = int(re.match(r"([-\d]+)", soup.find(id="columnCenter_ctl01_spnTodayHighTempCelsius").get_text()).group(0))
+  forecast_today = soup.find(attrs={"class": "todayForecast"}).get_text().strip()
+  
   r = requests.get("http://www.skiheavenly.com/the-mountain/terrain-and-lift-status.aspx")
   data = r.text
   soup = BeautifulSoup(data)
@@ -28,8 +35,13 @@ def snow_report():
   acres_open  = int(soup.find(id="columnRight_ctl00_liAcresOpen").find_all("span")[0].get_text())
   acres_total = int(soup.find(id="columnRight_ctl00_liAcresOpen").find_all("span")[1].get_text())
   
-  percent_open = int(soup.find(id="columnRight_ctl00_liOpenPercent").find_all("span")[0].get_text().split("%")[0])
+  try:
+    percent_open = int(soup.find(id="columnRight_ctl00_liOpenPercent").find_all("span")[0].get_text().split("%")[0])
+  except:
+    percent_open = None
   
+  timestamp = re.match(r".*as of\s*(.*)", soup.find(id="terrainStatus").find(attrs={"class": "introText"}).get_text(), flags=re.S).group(1)
+   
   # Okay, here comes the fun bit.
   regions = soup.find(id="ScheduledRuns").find_all("div", recursive=False)
   
@@ -59,6 +71,16 @@ def snow_report():
   
   words = soup.find(attrs={"class": "introText"}).get_text()
   
+  r = requests.get("http://www.snow.com/VailResorts/HttpHandlers/GenericProxy.ashx?url=http://cache.snow.com/httphandlers/genericproxy.ashx?name=SnowReportFeed")
+  data = r.text
+  soup = BeautifulSoup(data)
+  
+  resort = soup.find("resort", description=re.compile("Heavenly"))
+  
+  if percent_open is None:
+    percent_open = int(resort.find("terrainopen")['percent'])
+  tempF = int(resort.find("temperature")['fahrenheit'])
+  
   # From http://www.snow.com/faqdetail/Snow-Stake-Cams/Where-do-you-measure.axd:
   #   The official snow stake at Heavenly is located near Dipper Express at
   #   9,800 feet.  Two additional snow stakes are the Mott Canyon snow stake,
@@ -67,7 +89,9 @@ def snow_report():
   #   camera and the one we use to record our historical snowfall totals.
   
   return {
+    "time": timestamp,
     "description": words,
+    "weather": { "temp": tempF, "forecast": { "temp": { "low": tempF_low, "high": tempF_high }, "today": forecast_today } },
     "snow_stakes": {
       "dipper_express": {
         "elevation": 9800,
@@ -84,6 +108,7 @@ def snow_report():
     "runs": runs,
     "stats": {
       "runs": {"open": runs_open, "total": runs_total},
+      "lifts": { "open": lifts_open, "total": lifts_total },
       "acres": {"open": acres_open, "total": acres_total},
       "percent": percent_open
     }
