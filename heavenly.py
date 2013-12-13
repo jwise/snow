@@ -19,7 +19,10 @@ def snow_report():
   # Yes, I know that it says "TempCelsius".  Celsius is in the alt text. 
   # The text itself is Fahrenheit.  Good work.
   tempF_low      = int(re.match(r"([-\d]+)", soup.find(id="columnCenter_ctl01_spnTodayLowTempCelsius").get_text()).group(0))
-  tempF_high     = int(re.match(r"([-\d]+)", soup.find(id="columnCenter_ctl01_spnTodayHighTempCelsius").get_text()).group(0))
+  try:
+    tempF_high   = int(re.match(r"([-\d]+)", soup.find(id="columnCenter_ctl01_spnTodayHighTempCelsius").get_text()).group(0))
+  except:
+    tempF_high   = None
   forecast_today = soup.find(attrs={"class": "todayForecast"}).get_text().strip()
   
   r = requests.get("http://www.skiheavenly.com/the-mountain/terrain-and-lift-status.aspx")
